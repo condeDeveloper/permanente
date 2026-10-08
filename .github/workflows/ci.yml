@@ -1,0 +1,50 @@
+name: testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  testes:
+    runs-on: ${{ matrix.so }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        so: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # O juiz e a DEFINICAO: a soma, sobre todas as n! permutacoes, do produto de
+      # uma entrada por linha. Ela custa n fatorial e por isso para em ordem onze,
+      # e e justamente por isso que ela e juiz e nao algoritmo.
+      #
+      # E ha um SEGUNDO juiz que nao sabe o que e permanente: numa matriz de zeros
+      # e uns, a permanente CONTA os emparelhamentos perfeitos do grafo bipartido,
+      # e contar e so percorrer a arvore de distribuicoes.
+      - name: testes
+        run: dotnet test testes/Permanente.Testes/Permanente.Testes.csproj -c Release --nologo -v q
+
+      - name: Ryser contra a definicao
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- definicao
+
+      - name: o que o sinal faz com a mesma formula
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- sinal
+
+      - name: contar emparelhamentos por tres caminhos
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- contar
+
+      - name: o custo das duas contas na mesma matriz
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- custo
+
+      - name: a densidade dos uns
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- densidade
+
+      - name: ate onde cada metodo chega
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- alcance
